@@ -53,17 +53,18 @@ const container = {
 
 var playerRandomX = Math.floor(Math.random() * 9);
 var playerRandomY = Math.floor(Math.random() * 9);
-
+var fieldLength = 10;
 
 const Field = () => {    
     const [playerPosition, setPlayerPosition] = React.useState({x: playerRandomX, y: playerRandomY});
-
+    const [prevPlayerPosition, setPrevPlayerPosition] = React.useState({x: playerRandomX, y: playerRandomY});
+    
     const createField = () => {
         const createField = []
-        for(var i=0; i<9; i++) {
-            createField[i] = new Array(9)
-            for (var j = 0; j<9; j++) {
-                createField[i][j] = Math.floor(Math.random() * 11);
+        for(var i=0; i <= fieldLength; i++) {
+            createField[i] = new Array(10)
+            for (var j = 0; j <= fieldLength; j++) {
+                createField[i][j] = Math.floor(Math.random() * 9);
             }
         }
         
@@ -77,13 +78,15 @@ const Field = () => {
     }
 
     const [field, setField] = React.useState(createField());
-
+    
     useEffect(() => {
-        const newField = field.slice();
+        const newField = [...field];
         newField[playerPosition.y][playerPosition.x] = "T";
-        
-        setField(newField)
+        newField[prevPlayerPosition.y][prevPlayerPosition.x] = Math.floor(Math.random() * 9);
+        // para apenas pintar o field newField[prevPlayerPosition.y][prevPlayerPosition.x] = "T";
 
+        setField(newField);
+        
         document.addEventListener('keydown', moveFoward, false);
         document.addEventListener('keydown', moveBack, false);
         document.addEventListener('keydown', moveUp, false);
@@ -95,65 +98,85 @@ const Field = () => {
           document.removeEventListener('keydown', moveUp, false);
           document.removeEventListener('keydown', moveDown, false);
         }
-    },[field, playerPosition]);
+    },[playerPosition, prevPlayerPosition]);
 
     
 
-    const collision = (x, y) => {
-        
+    const collision = (x, y, action) => {
+        if(y === 0 && action === "UP" || y === fieldLength && (action === "DOWN")) {
+            return true;
+        } else if (x === 0 && action === "BACK" || x === fieldLength && (action === "FOWARD")) {   
+            return true;
+        } else { 
+            return false;
+        }
     }
 
     const moveFoward = (e) => {
         e.preventDefault();
         if (e.keyCode === 39) {
-            setPlayerPosition({ y: playerPosition.y, x: playerPosition.x + 1 })
+            if (!collision(playerPosition.x, playerPosition.y, "FOWARD")) { 
+                setPlayerPosition({ y: playerPosition.y, x: playerPosition.x + 1 })
+                setPrevPlayerPosition({ y: playerPosition.y, x: playerPosition.x })
+            }            
         } 
     }
 
     const moveBack = (e) => {
         e.preventDefault();
         if (e.keyCode === 37) {
-            setPlayerPosition({ y: playerPosition.y, x: playerPosition.x - 1 })
-        } 
-    }
-
-    const moveUp = (e) => {
-         e.preventDefault();
-        if (e.keyCode === 40) {        
-            setPlayerPosition({ y: playerPosition.y + 1, x: playerPosition.x })
+            if (!collision(playerPosition.x, playerPosition.y, "BACK")) { 
+                setPlayerPosition({ y: playerPosition.y, x: playerPosition.x - 1 })
+                setPrevPlayerPosition({ y: playerPosition.y, x: playerPosition.x })
+            }
         } 
     }
 
     const moveDown = (e) => {
          e.preventDefault();
-        if (e.keyCode === 38) {        
-            setPlayerPosition({ y: playerPosition.y - 1, x: playerPosition.x })
+        if (e.keyCode === 40) {        
+            if (!collision(playerPosition.x, playerPosition.y, "DOWN")) { 
+                setPlayerPosition({ y: playerPosition.y + 1, x: playerPosition.x })
+                setPrevPlayerPosition({ y: playerPosition.y, x: playerPosition.x })
+            }
+        } 
+    }
+
+    const moveUp = (e) => {
+         e.preventDefault();
+        if (e.keyCode === 38) {    
+            if (!collision(playerPosition.x, playerPosition.y, "UP")) { 
+                setPlayerPosition({ y: playerPosition.y - 1, x: playerPosition.x })
+                setPrevPlayerPosition({ y: playerPosition.y, x: playerPosition.x })
+            }    
         } 
     }
 
     return (
         <div style={container}>
-            {/* {
+           {/*  {
                 field.map( linha => {return(  <div style={linhaStyle}> {linha.map(line => {return ( <div style={styleTest}> {line} </div> )}) }</div>)} )
-            } */}
-           {field.map(linha => {
+            }  
+            {playerPosition.x}
+            {playerPosition.y} */}
+           {field.map((linha, index) => {
                 return (
-                    <div>
+                    <div key={index} >
                         <div style={linhaStyle}>
-                            {linha.map(bloco => { 
+                            {linha.map((bloco, index) => { 
                                 if(bloco === "*") {
                                 return (
-                                        <div style={style}>
+                                        <div key={index} style={style}>
                                         </div> 
                                     )
                                 } else if (bloco === "T") {
                                     return (
-                                        <div style={stylePlayer}>
+                                        <div key={index} style={stylePlayer}>
                                         </div> 
                                     )
                                 } else {
                                     return (
-                                        <div style={stylegrama}>
+                                        <div key={index} style={stylegrama}>
                                         </div>
                                     )
                                 }
@@ -161,7 +184,7 @@ const Field = () => {
                         </div>
                     </div>
                 )
-            })} 
+            })}   
         </div>
         )
        
