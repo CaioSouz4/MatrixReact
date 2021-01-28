@@ -10,13 +10,13 @@ const style = {
     border: "solid 1px #732d26",
 }
 
-const styleTest = {
+/* const styleTest = {
     display: "flex",
     flexDirection: "row",
     flexWrap: "wrap",
     width: "20px", 
     height: "20px",
-}
+} */
 
 const stylegrama = {
     display: "flex",
